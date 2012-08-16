@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Install file for HR Countries Borders module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function hr_countries_borders_install() {
+  // Import borders
+  _hr_countries_borders_import_csv();
+}
+
+/**
+ * Helper function to import countries.
+ */
+function _hr_countries_borders_import_csv() {
+  $t = get_t();
+  $countries = array();
+  $handle = fopen(dirname(__FILE__) . '/hr_countries_borders.csv', 'r');
+  $headers = fgetcsv($handle, 1024, ';');
+  while (($row = fgetcsv($handle, 1024, ';')) !== FALSE) {
+    // The wkt data.
+    $row[0] = trim($row[0]);
+    // The iso3 data.
+    $row[2] = empty($row[2]) || $row[2] == 'NULL' ? '' : trim($row[2]);
+    if (!empty($row[0]) && $row[0] != 'NULL' && !empty($row[2])) {
+      $countries[$row[2]] = array(
+        'wkt' => $row[0],
+      );
+    }
+  }
+  fclose($handle);
+  foreach ($countries as $key => $wkt) {
+    $country = countries_country_lookup($key, 'iso3');
+    if ($country) {
+      $country->field_countries_borders[LANGUAGE_NONE][0] = geofield_compute_values($wkt);
+      country_save($country);
+    }
+  }
+  
+  watchdog('countries', "Pre-populated HR countries borders data.");
+}

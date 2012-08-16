@@ -1,0 +1,6 @@
+name = Humanitarianresponse Countries Borders
+description = A module that provides UN approved countries borders as WKT for use with OpenLayers
+package = Humanitarianresponse
+core = 7.x
+
+dependencies[] = countries_borders
